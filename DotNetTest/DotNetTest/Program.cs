@@ -19,7 +19,7 @@ namespace DotNetTest
 
                 _service = new ExchangeService
                 {
-                    Credentials = new WebCredentials("software.goat@hotmail.com", "irontiger1125")
+                    Credentials = new WebCredentials("eee", "xxx")
                 };
             }
             catch
