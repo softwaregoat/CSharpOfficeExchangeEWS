@@ -1,6 +1,8 @@
 ﻿using Microsoft.Exchange.WebServices.Data;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +13,9 @@ namespace DotNetTest
     {
         static void Main(string[] args)
         {
+            var user_email = ConfigurationManager.AppSettings.Get("user_email");
+            var user_password = ConfigurationManager.AppSettings.Get("user_password");
+
             ExchangeService _service;
 
             try
@@ -19,7 +24,7 @@ namespace DotNetTest
 
                 _service = new ExchangeService
                 {
-                    Credentials = new WebCredentials("eee", "xxx")
+                    Credentials = new WebCredentials(user_email, user_password)
                 };
             }
             catch
@@ -37,11 +42,31 @@ namespace DotNetTest
 
                 Console.WriteLine("Reading mail");
 
-                // Read 100 mails
-                foreach (EmailMessage email in _service.FindItems(WellKnownFolderName.Inbox, new ItemView(100)))
+                var path = "Result.txt";
+                TextWriter tw = new StreamWriter(path);
+
+                // Read 100 items
+                foreach (Contact contact in _service.FindItems(WellKnownFolderName.Contacts, new ItemView(100)))
                 {
-                    Console.WriteLine(email.From.Address);
+                    var GivenName = contact.GivenName;
+                    var Surname = contact.Surname;
+                    var City = contact.PhysicalAddresses[PhysicalAddressKey.Business].City;
+                    var CountryOrRegion = (contact.PhysicalAddresses[PhysicalAddressKey.Business].CountryOrRegion);
+                    var PostalCode = (contact.PhysicalAddresses[PhysicalAddressKey.Business].PostalCode);
+                    var State = (contact.PhysicalAddresses[PhysicalAddressKey.Business].State);
+                    var Street = (contact.PhysicalAddresses[PhysicalAddressKey.Business].Street);
+                    var MobilePhone = (contact.PhoneNumbers[PhoneNumberKey.MobilePhone]);
+                    var EmailAddress1 = contact.EmailAddresses[EmailAddressKey.EmailAddress1];
+
+                    var line = String.Format("{0}|{1}|{2} {3}, {4}, {5}|{6}|{7}|{8}",
+                        GivenName, Surname, City, CountryOrRegion, PostalCode, State, Street, MobilePhone, EmailAddress1);
+
+                    tw.WriteLine(line);
+
+                    Console.WriteLine(line);
                 }
+
+                tw.Close();
                 Console.WriteLine("Exiting");
             }
             catch (Exception e)
